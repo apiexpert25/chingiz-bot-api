@@ -3,17 +3,30 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Str;
 
 class VoiceMessages extends Model
 {
-    protected   $fillable = [
+    protected $fillable = [
         'telegram_id',
         'voice_id',
-        'telegram_id',
         'status',
-        'download_url',
+        'voice_download_link',
     ];
-    protected $guarded = [
-        'id',
-    ];
+
+    protected static function boot()
+    {
+        parent::boot();
+
+        static::creating(function ($voiceMessage) {
+            if (!$voiceMessage->voice_id) {
+                $voiceMessage->voice_id = (string) Str::uuid();
+            }
+        });
+    }
+
+    public function getVoiceStatusLinkAttribute()
+    {
+        return url("/api/voice/{$this->voice_id}");
+    }
 }

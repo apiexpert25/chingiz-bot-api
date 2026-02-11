@@ -13,11 +13,14 @@ return new class extends Migration
     {
         Schema::create('voice_messages', function (Blueprint $table) {
             $table->id();
-            $table->string('voice_id');
+            $table->uuid('voice_id')->unique();
             $table->bigInteger('telegram_id');
-            $table->string('status');
-            $table->string('download_url');
+            $table->enum('status', ['started', 'completed'])->default('started');
+            $table->string('voice_download_link')->nullable();
             $table->timestamps();
+
+            // Index for daily limit queries
+            $table->index(['telegram_id', 'created_at']);
         });
     }
 

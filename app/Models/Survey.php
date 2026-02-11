@@ -6,11 +6,12 @@ use Illuminate\Database\Eloquent\Model;
 
 class Survey extends Model
 {
-    protected   $fillable = [
+    protected $fillable = [
         'telegram_id',
         'items'
     ];
-    protected $guarded = [
-        'id',
+
+    protected $casts = [
+        'items' => 'array',
     ];
 }
