@@ -5,12 +5,27 @@ namespace App\Http\Controllers;
 use App\Models\Survey;
 use App\Models\VoiceMessages;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Validator;
 use Carbon\Carbon;
 
 class ApiController extends Controller
 {
     public function survey(Request $request)
     {
+        $validator = Validator::make($request->all(), [
+            'integration_key' => 'required|string',
+            'telegram_id' => 'required|integer',
+            'items' => 'required|array',
+            'items.*.question' => 'required|string',
+            'items.*.answer' => 'required|string',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'errors' => $validator->errors()
+            ], 422);
+        }
+
         $data = $request->all();
 
         Survey::updateOrCreate(
@@ -23,6 +38,17 @@ class ApiController extends Controller
 
     public function voice(Request $request)
     {
+        $validator = Validator::make($request->all(), [
+            'integration_key' => 'required|string',
+            'telegram_id' => 'required|integer',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'errors' => $validator->errors()
+            ], 422);
+        }
+
         $data = $request->all();
         $telegramId = $data['telegram_id'];
 

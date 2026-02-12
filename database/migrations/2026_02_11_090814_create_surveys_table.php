@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('surveys', function (Blueprint $table) {
             $table->id();
             $table->bigInteger('telegram_id');
-            $table->json('items');
+            $table->text('items');
             $table->timestamps();
         });
     }

@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('voice_messages', function (Blueprint $table) {
             $table->id();
-            $table->uuid('voice_id')->unique();
+            $table->string('voice_id')->unique();
             $table->bigInteger('telegram_id');
             $table->enum('status', ['started', 'completed'])->default('started');
             $table->string('voice_download_link')->nullable();

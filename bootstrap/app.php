@@ -11,8 +11,12 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
+        $middleware->validateCsrfTokens(except: [
+            'api/*',
+        ]);
+        
         $middleware->alias([
-            'integration.key' => \App\Http\Middleware\EnsureValidIntegrationKey::class,
+            'validate.key' => \App\Http\Middleware\ValidateIntegrationKey::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
