@@ -39,4 +39,12 @@ return [
         'api_key' => env('ELEVENLABS_API_KEY'),
         'voice_id' => env('ELEVENLABS_VOICE_ID'),
     ],
+
+    'gemini' => [
+        'api_key' => env('GEMINI_API_KEY'),
+    ],
+
+    'openrouter' => [
+        'api_key' => env('OPENROUTER_API_KEY'),
+    ],
 ];

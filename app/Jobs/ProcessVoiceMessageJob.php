@@ -3,7 +3,10 @@
 namespace App\Jobs;
 
 use App\Entities\ChatStateEntity;
+use App\Entities\SurveyEntity;
+use App\Entities\VoiceMessagesEntity;
 use App\Http\Service\ElevenlabsService;
+use App\Http\Service\PromptService;
 use DefStudio\Telegraph\Facades\Telegraph;
 use DefStudio\Telegraph\Keyboard\Keyboard;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -18,13 +21,13 @@ class ProcessVoiceMessageJob implements ShouldQueue
      * Create a new job instance.
      */
 
-    protected int $chatId;
-    protected string $text;
 
-    public function __construct(int $chatId, string $text)
+    private VoiceMessagesEntity $voice;
+
+
+    public function __construct(VoiceMessagesEntity $voice)
     {
-        $this->chatId = $chatId;
-        $this->text = $text;
+        $this->voice = $voice;
     }
 
     /**
@@ -32,22 +35,24 @@ class ProcessVoiceMessageJob implements ShouldQueue
      */
     public function handle(): void
     {
-        $chatUser = ChatStateEntity::findByChatId($this->chatId);
+        $tgId = $this->voice->getTelegramId();
 
-        if (!$chatUser) {
-            return;
-        }
+        $answersList = SurveyEntity::getAnswersByTelegramId($tgId)->getItems();
+
+        $promptService = new PromptService();
+
+        $prompt = $promptService->generatePrompt($answersList);
 
         try {
             $service = new ElevenlabsService();
 
-            $audioContent = $service->textToSpeech($this->text);
+            $audioContent = $service->textToSpeech($prompt);
 
             if (!$audioContent) {
                 throw new \Exception('Не удалось получить аудиоконтент от ElevenLabs.');
             }
 
-            $tempPath = storage_path("app/voices/voice_{$this->chatId}_" . time() . ".mp3");
+            $tempPath = storage_path("app/voices/voice_{$this->voice->getTelegramId()}_" . time() . ".mp3");
 
 
             if (!file_exists(dirname($tempPath))) {
@@ -55,42 +60,16 @@ class ProcessVoiceMessageJob implements ShouldQueue
             }
 
             file_put_contents($tempPath, $audioContent);
-
-
-
-            Telegraph::chat($this->chatId)
-                ->voice($tempPath)
-                ->send();
-
             @unlink($tempPath);
 
-            $chatUser->updateInCompletedStatus();
-
-            $message = "✅ Готово!\nЕсли хочешь озвучить ещё один текст — жми кнопку ниже 👇";
-
-            $keyboard = Keyboard::make()
-                ->button('💫 Озвучить текст')
-                ->action('voiceMessage');
-
-            Telegraph::chat($this->chatId)
-                ->message($message)
-                ->keyboard($keyboard)
-                ->send();
+            $this->voice->updateInCompletedStatus();
 
         } catch (\Throwable $e) {
 
             Log::error('Ошибка при генерации голосового сообщения: ' . $e->getMessage(), [
-                'chat_id' => $this->chatId,
-                'text' => $this->text,
+                'chat_id' => $this->voice->getTelegramId(),
                 'trace' => $e->getTraceAsString(),
             ]);
-
-            $chatUser->updateInStartStatus();
-
-
-            Telegraph::chat($this->chatId)
-                ->message('Произошла ошибка при генерации голосового сообщения. Попробуйте снова, пожалуйста.')
-                ->send();
         }
     }
 }

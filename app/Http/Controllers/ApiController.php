@@ -2,6 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Entities\SurveyEntity;
+use App\Entities\VoiceMessagesEntity;
+use App\Http\Requests\CreateVoiceRequest;
+use App\Http\Requests\SurveyCreateRequest;
+use App\Jobs\ProcessVoiceMessageJob;
 use App\Models\Survey;
 use App\Models\VoiceMessages;
 use Illuminate\Http\Request;
@@ -10,53 +15,25 @@ use Carbon\Carbon;
 
 class ApiController extends Controller
 {
-    public function survey(Request $request)
+    public function survey(SurveyCreateRequest $request)
     {
-        $validator = Validator::make($request->all(), [
-            'integration_key' => 'required|string',
-            'telegram_id' => 'required|integer',
-            'items' => 'required|array',
-            'items.*.question' => 'required|string',
-            'items.*.answer' => 'required|string',
-        ]);
+        $data = $request->validated();
 
-        if ($validator->fails()) {
-            return response()->json([
-                'errors' => $validator->errors()
-            ], 422);
-        }
-
-        $data = $request->all();
-
-        Survey::updateOrCreate(
-            ['telegram_id' => $data['telegram_id']],
-            ['items' => $data['items']]
-        );
+        SurveyEntity::updateOrCreate($data['telegram_id'], json_encode($data['items']));
 
         return response()->json([], 200);
     }
 
-    public function voice(Request $request)
+    public function voice(CreateVoiceRequest $request)
     {
-        $validator = Validator::make($request->all(), [
-            'integration_key' => 'required|string',
-            'telegram_id' => 'required|integer',
-        ]);
 
-        if ($validator->fails()) {
-            return response()->json([
-                'errors' => $validator->errors()
-            ], 422);
-        }
-
-        $data = $request->all();
+        $data = $request->validated();
         $telegramId = $data['telegram_id'];
 
-        $existingVoiceToday = VoiceMessages::where('telegram_id', $telegramId)
-            ->whereDate('created_at', Carbon::today())
-            ->first();
+        $existingVoiceToday = VoiceMessagesEntity::findSentVoiceToday($telegramId);
 
-        if ($existingVoiceToday) {
+
+        if ($existingVoiceToday !== null) {
             return response()->json([
                 'telegram_id' => $telegramId,
                 'result' => 'error',
@@ -64,36 +41,48 @@ class ApiController extends Controller
             ], 400);
         }
 
-        $voice = VoiceMessages::create([
-            'telegram_id' => $telegramId,
-            'status' => 'started',
-        ]);
+
+        $answers = SurveyEntity::findAnswersByTelegramId($telegramId);
+
+        if ($answers === null) {
+            return response()->json([
+                'telegram_id' => $telegramId,
+                'result' => 'error',
+                'reason' => 'Пользователь не заполнил анкету'
+            ], 400);
+        }
+
+
+        $voice = VoiceMessagesEntity::create($telegramId);
+
+        ProcessVoiceMessageJob::dispatch($voice);
 
         return response()->json([
-            'telegram_id' => $voice->telegram_id,
-            'voice_id' => $voice->voice_id,
-            'voice_status_link' => $voice->voice_status_link,
-            'voice_download_link' => $voice->voice_download_link,
-            'voice_status' => $voice->status,
+            'telegram_id' => $voice->getTelegramId(),
+            'voice_id' => $voice->getVoiceId(),
+            'voice_status_link' => config('app.url') . '/api/voice/' . $voice->getVoiceId(),
+            'voice_download_link' => $voice->findVoiceDownloadLink(),
+            'voice_status' => $voice->getStatus(),
         ], 200);
     }
 
     public function getVoice(string $voice_id)
     {
-        $voice = VoiceMessages::where('voice_id', $voice_id)->first();
+        $voice = VoiceMessagesEntity::findByVoiceId($voice_id);
 
-        if (!$voice) {
+        if ($voice === null) {
             return response()->json([
                 'error' => 'Voice not found'
             ], 400);
         }
 
+
         return response()->json([
-            'telegram_id' => $voice->telegram_id,
-            'voice_id' => $voice->voice_id,
-            'voice_status_link' => $voice->voice_status_link,
-            'voice_download_link' => $voice->voice_download_link,
-            'voice_status' => $voice->status,
+            'telegram_id' => $voice->getTelegramId(),
+            'voice_id' => $voice->getVoiceId(),
+            'voice_status_link' => config('app.url') . '/api/voice/' . $voice->getVoiceId(),
+            'voice_download_link' => $voice->findVoiceDownloadLink(),
+            'voice_status' => $voice->getStatus(),
         ], 200);
     }
 }

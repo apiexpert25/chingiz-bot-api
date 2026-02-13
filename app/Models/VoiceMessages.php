@@ -14,19 +14,4 @@ class VoiceMessages extends Model
         'voice_download_link',
     ];
 
-    protected static function boot()
-    {
-        parent::boot();
-
-        static::creating(function ($voiceMessage) {
-            if (!$voiceMessage->voice_id) {
-                $voiceMessage->voice_id = (string) Str::uuid();
-            }
-        });
-    }
-
-    public function getVoiceStatusLinkAttribute()
-    {
-        return url("/api/voice/{$this->voice_id}");
-    }
 }

@@ -16,8 +16,8 @@ class ValidateIntegrationKey
         $providedKey = $request->input('integration_key');
         $validKey = env('INTEGRATION_KEY');
 
-        // Check if key exists and matches
-        if (empty($providedKey) || $providedKey !== $validKey) {
+        // Check if key exists and matches (cast to string to avoid type mismatch)
+        if (empty($providedKey) || (string) $providedKey !== (string) $validKey) {
             return response()->json([
                 'error' => 'Invalid or missing integration key'
             ], 401);
