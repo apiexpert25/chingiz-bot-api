@@ -12,6 +12,7 @@ class VoiceMessages extends Model
         'voice_id',
         'status',
         'voice_download_link',
+        'error_message',
     ];
 
 }

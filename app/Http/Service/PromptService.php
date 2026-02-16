@@ -27,9 +27,6 @@ class PromptService
 Данные о человеке:
 PROMPT;
 
-    private const OPENROUTER_URL = 'https://openrouter.ai/api/v1/chat/completions';
-    private const OPENROUTER_MODEL = 'google/gemma-3n-e2b-it:free';
-
     /**
      * Форматирует JSON-строку с вопросами/ответами в читаемый текст.
      */
@@ -54,47 +51,59 @@ PROMPT;
 
     public function generatePrompt(string $answersList): string
     {
+
+
         $formattedAnswers = $this->formatAnswers($answersList);
 
         $prompt = self::BASE_PROMPT . "\n" . $formattedAnswers;
 
         $textToSpeech = $this->askAI($prompt);
-
+        Log::info($textToSpeech);
         return $textToSpeech;
     }
 
     /**
-     * Отправляет промт в OpenRouter API (бесплатная модель) и возвращает сгенерированный текст.
+     * Отправляет промт в Timeweb AI Agent и возвращает сгенерированный текст.
      *
      * @throws \Exception
      */
     public function askAI(string $prompt): string
     {
-        $apiKey = config('services.openrouter.api_key');
+        $token = config('services.timeweb.token');
+        $agentId = config('services.timeweb.agent_id');
+        $url = "https://agent.timeweb.cloud/api/v1/cloud-ai/agents/{$agentId}/call";
 
         $response = Http::withHeaders([
-            'Authorization' => 'Bearer ' . $apiKey,
+            'Authorization' => 'Bearer ' . $token,
+            'x-proxy-source' => '',
             'Content-Type' => 'application/json',
-        ])->post(self::OPENROUTER_URL, [
-                    'model' => self::OPENROUTER_MODEL,
-                    'messages' => [
-                        [
-                            'role' => 'user',
-                            'content' => $prompt,
-                        ],
-                    ],
+        ])->post($url, [
+                    'message' => $prompt,
+                    'parent_message_id' => '',
+                    'file_ids' => []
                 ]);
 
         if ($response->failed()) {
-            Log::error('OpenRouter API error', [
+            Log::error('Timeweb AI API error', [
                 'status' => $response->status(),
                 'body' => $response->body(),
             ]);
-            throw new \Exception('OpenRouter API request failed: ' . $response->body());
+            throw new \Exception('Timeweb AI API request failed: ' . $response->body());
         }
+
+
+        Log::info('Timeweb AI response', ['body' => $response->json()]);
 
         $data = $response->json();
 
-        return $data['choices'][0]['message']['content'] ?? '';
+
+
+        if (isset($data['message'])) {
+            return $data['message'];
+        }
+
+        // Если это стриминг или другая структура, возможно потребуется адаптация.
+        // Пока возвращаем JSON строку если не нашли message, чтобы увидеть что пришло.
+        return $data['message'] ?? $data['answer'] ?? json_encode($data, JSON_UNESCAPED_UNICODE);
     }
 }

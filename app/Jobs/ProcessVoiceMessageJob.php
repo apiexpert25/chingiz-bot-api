@@ -12,6 +12,7 @@ use DefStudio\Telegraph\Keyboard\Keyboard;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
 
 class ProcessVoiceMessageJob implements ShouldQueue
 {
@@ -52,24 +53,21 @@ class ProcessVoiceMessageJob implements ShouldQueue
                 throw new \Exception('Не удалось получить аудиоконтент от ElevenLabs.');
             }
 
-            $tempPath = storage_path("app/voices/voice_{$this->voice->getTelegramId()}_" . time() . ".mp3");
+            $fileName = "voices/voice_{$this->voice->getTelegramId()}_" . time() . ".mp3";
+            Storage::disk('public')->put($fileName, $audioContent);
 
+            $fileUrl = url(Storage::url($fileName));
 
-            if (!file_exists(dirname($tempPath))) {
-                mkdir(dirname($tempPath), 0755, true);
-            }
-
-            file_put_contents($tempPath, $audioContent);
-            @unlink($tempPath);
-
-            $this->voice->updateInCompletedStatus();
+            $this->voice->setCompletedState($fileUrl);
 
         } catch (\Throwable $e) {
 
+            $this->voice->setStatusError($e->getMessage());
             Log::error('Ошибка при генерации голосового сообщения: ' . $e->getMessage(), [
                 'chat_id' => $this->voice->getTelegramId(),
                 'trace' => $e->getTraceAsString(),
             ]);
+
         }
     }
 }

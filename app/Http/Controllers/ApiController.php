@@ -6,10 +6,16 @@ use App\Entities\SurveyEntity;
 use App\Entities\VoiceMessagesEntity;
 use App\Http\Requests\CreateVoiceRequest;
 use App\Http\Requests\SurveyCreateRequest;
+use App\Http\Service\ElevenlabsService;
+use App\Http\Service\PromptService;
 use App\Jobs\ProcessVoiceMessageJob;
 use App\Models\Survey;
 use App\Models\VoiceMessages;
+use DefStudio\Telegraph\Facades\Telegraph;
+use DefStudio\Telegraph\Keyboard\Keyboard;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
 use Carbon\Carbon;
 
@@ -64,6 +70,48 @@ class ApiController extends Controller
             'voice_download_link' => $voice->findVoiceDownloadLink(),
             'voice_status' => $voice->getStatus(),
         ], 200);
+    }
+
+    public function test(int $tegramId)
+    {
+        $tgId = $tegramId;
+
+        $answersList = SurveyEntity::getAnswersByTelegramId($tgId)->getItems();
+
+        $promptService = new PromptService();
+
+        $prompt = $promptService->generatePrompt($answersList);
+
+
+            $service = new ElevenlabsService();
+
+            $audioContent = $service->textToSpeech($prompt);
+
+
+            $tempPath = storage_path("app/voices/voice_{$tegramId}_" . time() . ".mp3");
+
+        Log::info($tempPath);
+            if (!file_exists(dirname($tempPath))) {
+                mkdir(dirname($tempPath), 0755, true);
+            }
+
+            file_put_contents($tempPath, $audioContent);
+
+//            @unlink($tempPath);
+
+
+
+
+            $message = "✅ Готово!\nЕсли хочешь озвучить ещё один текст — жми кнопку ниже 👇";
+
+            $keyboard = Keyboard::make()
+                ->button('💫 Озвучить текст')
+                ->action('voiceMessage');
+
+            Telegraph::chat($tegramId)
+                ->message($message)
+                ->keyboard($keyboard)
+                ->send();
     }
 
     public function getVoice(string $voice_id)

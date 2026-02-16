@@ -15,8 +15,9 @@ return new class extends Migration
             $table->id();
             $table->string('voice_id')->unique();
             $table->bigInteger('telegram_id');
-            $table->enum('status', ['started', 'completed'])->default('started');
+            $table->enum('status', ['started', 'completed', 'error'])->default('started');
             $table->string('voice_download_link')->nullable();
+            $table->text('error_message')->nullable();
             $table->timestamps();
 
             // Index for daily limit queries

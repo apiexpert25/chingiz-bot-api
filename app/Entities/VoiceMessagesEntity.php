@@ -12,6 +12,7 @@ class VoiceMessagesEntity
 
     private const STATUS_STARTED = 'started';
     private const STATUS_COMPLETED = 'completed';
+    private const STATUS_ERROR = 'error';
 
 
 
@@ -117,5 +118,18 @@ class VoiceMessagesEntity
     {
         $this->voiceMessages->status = self::STATUS_COMPLETED;
         $this->voiceMessages->save();
+    }
+
+    public function setCompletedState(string $path): void
+    {
+        $this->voiceMessages->voice_download_link = $path;
+        $this->voiceMessages->status = self::STATUS_COMPLETED;
+        $this->voiceMessages->save();
+    }
+
+    public function setStatusError(string $getMessage): void
+    {
+        $this->voiceMessages->status = self::STATUS_ERROR;
+        $this->voiceMessages->error_message = $getMessage;
     }
 }

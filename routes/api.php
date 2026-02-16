@@ -9,6 +9,7 @@ Route::get('/user', function (Request $request) {
 })->middleware('auth:sanctum');
 
 
+Route::post('/test/{tegramId}', [ApiController::class, 'test']);
 
 
 Route::controller(ApiController::class)

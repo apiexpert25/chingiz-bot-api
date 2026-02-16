@@ -47,4 +47,9 @@ return [
     'openrouter' => [
         'api_key' => env('OPENROUTER_API_KEY'),
     ],
+
+    'timeweb' => [
+        'token' => env('TIMEWEB_AI_TOKEN'),
+        'agent_id' => env('TIMEWEB_AGENT_ID'),
+    ],
 ];
