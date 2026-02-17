@@ -72,9 +72,9 @@ class ApiController extends Controller
         ], 200);
     }
 
-    public function test(int $tegramId)
+    public function test(int $telegramId)
     {
-        $tgId = $tegramId;
+        $tgId = $telegramId;
 
         $answersList = SurveyEntity::getAnswersByTelegramId($tgId)->getItems();
 
@@ -88,7 +88,7 @@ class ApiController extends Controller
             $audioContent = $service->textToSpeech($prompt);
 
 
-            $tempPath = storage_path("app/voices/voice_{$tegramId}_" . time() . ".mp3");
+            $tempPath = storage_path("app/voices/voice_{$telegramId}_" . time() . ".mp3");
 
         Log::info($tempPath);
             if (!file_exists(dirname($tempPath))) {
@@ -99,16 +99,13 @@ class ApiController extends Controller
 
 //            @unlink($tempPath);
 
-
-
-
             $message = "✅ Готово!\nЕсли хочешь озвучить ещё один текст — жми кнопку ниже 👇";
 
             $keyboard = Keyboard::make()
                 ->button('💫 Озвучить текст')
                 ->action('voiceMessage');
 
-            Telegraph::chat($tegramId)
+            Telegraph::chat($telegramId)
                 ->message($message)
                 ->keyboard($keyboard)
                 ->send();
@@ -132,5 +129,10 @@ class ApiController extends Controller
             'voice_download_link' => $voice->findVoiceDownloadLink(),
             'voice_status' => $voice->getStatus(),
         ], 200);
+    }
+    public function statistics()
+    {
+       $array = VoiceMessagesEntity::getStatistics();
+       return response()->json($array, 200);
     }
 }

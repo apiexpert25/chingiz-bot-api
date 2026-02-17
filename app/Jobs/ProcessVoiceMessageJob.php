@@ -39,12 +39,11 @@ class ProcessVoiceMessageJob implements ShouldQueue
         $tgId = $this->voice->getTelegramId();
 
         $answersList = SurveyEntity::getAnswersByTelegramId($tgId)->getItems();
-
-        $promptService = new PromptService();
-
-        $prompt = $promptService->generatePrompt($answersList);
-
         try {
+            $promptService = new PromptService();
+
+            $prompt = $promptService->generatePrompt($answersList);
+
             $service = new ElevenlabsService();
 
             $audioContent = $service->textToSpeech($prompt);

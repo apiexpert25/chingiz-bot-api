@@ -15,8 +15,6 @@ class VoiceMessagesEntity
     private const STATUS_ERROR = 'error';
 
 
-
-
     private VoiceMessages $voiceMessages;
 
     public function __construct(VoiceMessages $voiceMessages)
@@ -48,7 +46,7 @@ class VoiceMessagesEntity
     {
         $voice = VoiceMessages::create([
             'telegram_id' => $telegramId,
-            'voice_id' => (string) Str::uuid(),
+            'voice_id' => (string)Str::uuid(),
             'status' => self::STATUS_STARTED,
         ]);
 
@@ -78,8 +76,6 @@ class VoiceMessagesEntity
         return self::make($voice);
     }
 
-
-
     public function getTelegramId(): int
     {
         return $this->voiceMessages->telegram_id;
@@ -95,7 +91,6 @@ class VoiceMessagesEntity
     {
         return $this->voiceMessages->status;
     }
-
 
 
     public function getVoiceMessages(): VoiceMessages
@@ -131,5 +126,19 @@ class VoiceMessagesEntity
     {
         $this->voiceMessages->status = self::STATUS_ERROR;
         $this->voiceMessages->error_message = $getMessage;
+    }
+
+    public static function getStatistics(): array
+    {
+        $today = Carbon::today();
+        $voicesRequestedLastMonth = VoiceMessages::whereDate('created_at', '>=', $today->subMonth())->count();
+        $voicesSentLastMonth = VoiceMessages::whereDate('created_at', '>=', $today->subMonth())
+            ->where('status', '=', self::STATUS_COMPLETED)
+            ->count();
+        return [
+            "date" => $today->format('Y-m-d'),
+            "voices_requested" => $voicesRequestedLastMonth,
+            "voices_sent" => $voicesSentLastMonth,
+        ];
     }
 }

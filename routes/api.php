@@ -18,4 +18,5 @@ Route::controller(ApiController::class)
         Route::post('/voice',               'voice');
         Route::get('/voice/{voice_id}',    'getVoice');
         Route::post('/survey',              'survey');
+        Route::get('/statistics',           'statistics');
     });
