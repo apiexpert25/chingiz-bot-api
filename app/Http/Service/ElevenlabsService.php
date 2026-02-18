@@ -2,9 +2,6 @@
 
 namespace App\Http\Service;
 
-use ElevenLabs\V1\SDK\Endpoint\AddVoiceV1VoicesAddPost;
-use ElevenLabs\V1\SDK\Endpoint\TextToSpeechV1TextToSpeechVoiceIdPost;
-use ElevenLabs\V1\SDK\Model\BodyTextToSpeechV1TextToSpeechVoiceIdPost;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 

@@ -4,20 +4,12 @@ namespace App\Http\Webhooks;
 
 use App\Entities\ChatStateEntity;
 use App\Jobs\ProcessVoiceMessageJob;
-use App\Models\ChatState;
 use DefStudio\Telegraph\Facades\Telegraph;
 use DefStudio\Telegraph\Handlers\WebhookHandler;
 use DefStudio\Telegraph\Keyboard\Keyboard;
-use Illuminate\Support\Facades\Log;
 
 class MainWebhookHandler extends WebhookHandler
 {
-
-//    public function start(): void
-//    {
-//        Log::info('gfdgdfg');
-//        $this->reply('fgdfgf');
-//    }
     public function handleMessage(): void
     {
 
