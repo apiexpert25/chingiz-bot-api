@@ -2,13 +2,10 @@
 
 namespace App\Jobs;
 
-use App\Entities\ChatStateEntity;
 use App\Entities\SurveyEntity;
 use App\Entities\VoiceMessagesEntity;
 use App\Http\Service\ElevenlabsService;
 use App\Http\Service\PromptService;
-use DefStudio\Telegraph\Facades\Telegraph;
-use DefStudio\Telegraph\Keyboard\Keyboard;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
 use Illuminate\Support\Facades\Log;
