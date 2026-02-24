@@ -63,19 +63,6 @@ class VoiceMessagesEntity
         return self::make($voice);
     }
 
-    public static function findLastSuccessVoice()
-    {
-        $voice = VoiceMessages::where('status', self::STATUS_COMPLETED)
-            ->orderBy('id', 'desc')
-            ->first();
-
-        if ($voice === null) {
-            return null;
-        }
-
-        return self::make($voice);
-    }
-
     public function getTelegramId(): int
     {
         return $this->voiceMessages->telegram_id;

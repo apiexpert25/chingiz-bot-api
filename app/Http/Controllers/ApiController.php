@@ -27,7 +27,6 @@ class ApiController extends Controller
 
         $existingVoiceToday = VoiceMessagesEntity::findSentVoiceToday($telegramId);
 
-
         if ($existingVoiceToday !== null) {
             return response()->json([
                 'telegram_id' => $telegramId,
@@ -80,9 +79,28 @@ class ApiController extends Controller
             'voice_status' => $voice->getStatus(),
         ], 200);
     }
-    public function statistics()
+    public function statistics(int $telegramId)
     {
        $array = VoiceMessagesEntity::getStatistics();
        return response()->json($array, 200);
+    }
+    public function findSurvey(int $telegramId)
+    {
+        $answers = SurveyEntity::findAnswersByTelegramId($telegramId);
+
+        if ($answers === null) {
+            return response()->json(['survey_is_filled' => false], 400);
+        }
+        return response()->json(['survey_is_filled' => true], 200);
+    }
+    public function findVoice(int $telegramId)
+    {
+        $existingVoiceToday = VoiceMessagesEntity::findSentVoiceToday($telegramId);
+
+        if ($existingVoiceToday === null) {
+            return response()->json(['voice_was_sent' => false], 400);
+        }
+
+        return response()->json(['voice_was_sent' => true], 200);
     }
 }

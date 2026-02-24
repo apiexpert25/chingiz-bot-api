@@ -8,15 +8,13 @@ Route::get('/user', function (Request $request) {
     return $request->user();
 })->middleware('auth:sanctum');
 
-
-Route::post('/test/{tegramId}', [ApiController::class, 'test']);
-
-
 Route::controller(ApiController::class)
     ->middleware('validate.key')
     ->group(function () {
         Route::post('/voice',               'voice');
-        Route::get('/voice/{voice_id}',    'getVoice');
+        Route::get('/voice/{voice_id}',     'getVoice');
         Route::post('/survey',              'survey');
         Route::get('/statistics',           'statistics');
+        Route::get('/find-survey/{telegram_id}', 'findSurvey');
+        Route::get('/find-voice/{telegram_id}',  'findVoice');
     });
