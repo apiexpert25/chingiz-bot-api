@@ -110,14 +110,13 @@ class ApiController extends Controller
             ], 200);
         }
         $voice_id = $existingVoiceToday->getVoiceId();
-        $voice = VoiceMessagesEntity::findByVoiceId($voice_id);
         return response()->json([
             'telegram_id' => $telegramId,
             'voice_was_sent' => true,
             'voice_id' => $voice_id,
             'voice_status_link' => config('app.url') . '/api/voice/' . $voice_id,
-            'voice_download_link' => $voice->findVoiceDownloadLink(),
-            'voice_status' => $voice->getStatus(),
+            'voice_download_link' => $existingVoiceToday->findVoiceDownloadLink(),
+            'voice_status' => $existingVoiceToday->getStatus(),
         ], 200);
     }
 }
