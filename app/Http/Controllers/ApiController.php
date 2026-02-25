@@ -46,7 +46,6 @@ class ApiController extends Controller
             ], 400);
         }
 
-
         $voice = VoiceMessagesEntity::create($telegramId);
 
         ProcessVoiceMessageJob::dispatch($voice);
@@ -89,18 +88,36 @@ class ApiController extends Controller
         $answers = SurveyEntity::findAnswersByTelegramId($telegramId);
 
         if ($answers === null) {
-            return response()->json(['survey_is_filled' => false], 400);
+            return response()->json([
+                'telegram_id' => $telegramId,
+                'survey_is_filled' => false
+            ], 200);
         }
-        return response()->json(['survey_is_filled' => true], 200);
+        return response()->json([
+            'telegram_id' => $telegramId,
+            'survey_is_filled' => true,
+            'answers' => json_decode($answers->getItems())
+        ], 200);
     }
     public function findVoice(int $telegramId)
     {
         $existingVoiceToday = VoiceMessagesEntity::findSentVoiceToday($telegramId);
 
         if ($existingVoiceToday === null) {
-            return response()->json(['voice_was_sent' => false], 400);
+            return response()->json([
+                'telegram_id' => $telegramId,
+                'voice_was_sent' => false
+            ], 200);
         }
-
-        return response()->json(['voice_was_sent' => true], 200);
+        $voice_id = $existingVoiceToday->getVoiceId();
+        $voice = VoiceMessagesEntity::findByVoiceId($voice_id);
+        return response()->json([
+            'telegram_id' => $telegramId,
+            'voice_was_sent' => true,
+            'voice_id' => $voice_id,
+            'voice_status_link' => config('app.url') . '/api/voice/' . $voice_id,
+            'voice_download_link' => $voice->findVoiceDownloadLink(),
+            'voice_status' => $voice->getStatus(),
+        ], 200);
     }
 }
