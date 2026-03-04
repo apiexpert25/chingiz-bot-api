@@ -59,7 +59,7 @@ class ApiController extends Controller
         ], 200);
     }
 
-    public function getVoice(string $voice_id)
+    public function checkVoiceStatus(string $voice_id)
     {
         $voice = VoiceMessagesEntity::findByVoiceId($voice_id);
 
@@ -78,12 +78,12 @@ class ApiController extends Controller
             'voice_status' => $voice->getStatus(),
         ], 200);
     }
-    public function statistics(int $telegramId)
+    public function statistics()
     {
        $array = VoiceMessagesEntity::getStatistics();
        return response()->json($array, 200);
     }
-    public function findSurvey(int $telegramId)
+    public function checkSurvey(int $telegramId)
     {
         $answers = SurveyEntity::findAnswersByTelegramId($telegramId);
 
@@ -99,7 +99,7 @@ class ApiController extends Controller
             'answers' => json_decode($answers->getItems())
         ], 200);
     }
-    public function findVoice(int $telegramId)
+    public function checkVoice(int $telegramId)
     {
         $existingVoiceToday = VoiceMessagesEntity::findSentVoiceToday($telegramId);
 

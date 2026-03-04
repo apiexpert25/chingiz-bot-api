@@ -117,15 +117,24 @@ class VoiceMessagesEntity
 
     public static function getStatistics(): array
     {
-        $today = Carbon::today();
-        $voicesRequestedLastMonth = VoiceMessages::whereDate('created_at', '>=', $today->subMonth())->count();
-        $voicesSentLastMonth = VoiceMessages::whereDate('created_at', '>=', $today->subMonth())
-            ->where('status', '=', self::STATUS_COMPLETED)
-            ->count();
-        return [
-            "date" => $today->format('Y-m-d'),
-            "voices_requested" => $voicesRequestedLastMonth,
-            "voices_sent" => $voicesSentLastMonth,
-        ];
+        $since = Carbon::today()->subMonth();
+
+        $voices = VoiceMessages::query()
+            ->whereDate('created_at', '>=', $since)
+            ->orderBy('created_at')
+            ->get();
+
+        $statistics = $voices
+            ->toBase()
+            ->groupBy(fn ($voice) => Carbon::parse($voice->created_at)->format('Y-m-d'))
+            ->map(fn ($group, $date) => [
+                'date' => $date,
+                'voices_requested' => $group->count(),
+                'voices_sent' => $group->where('status', self::STATUS_COMPLETED)->count(),
+            ])
+            ->values()
+            ->all();
+
+        return ['statistics' => $statistics];
     }
 }

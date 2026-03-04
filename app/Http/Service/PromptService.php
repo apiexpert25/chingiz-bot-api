@@ -33,7 +33,6 @@ class PromptService
     public function generatePrompt(string $answersList): string
     {
 
-
         $formattedAnswers = $this->formatAnswers($answersList);
 
         $prompt = $formattedAnswers;
@@ -44,7 +43,18 @@ class PromptService
     }
 
     /**
-     * Отправляет промт в Timeweb AI Agent и возвращает сгенерированный текст.
+     * Удаляет markdown code-block обёртки (```python, ```text и т.д.) из текста.
+     */
+
+    protected function stripMarkdownCodeBlocks(string $text): string
+    {
+        $text = preg_replace('/^```\w*\s*\n?/', '', $text);
+        $text = preg_replace('/\n?```\s*$/', '', $text);
+
+        return trim($text);
+    }
+    /**
+     * Отправляет промпт в Timeweb AI Agent и возвращает сгенерированный текст.
      *
      * @throws \Exception
      */
@@ -54,7 +64,7 @@ class PromptService
         $agentId = config('services.timeweb.agent_id');
         $url = "https://agent.timeweb.cloud/api/v1/cloud-ai/agents/{$agentId}/call";
 
-        $response = Http::withHeaders([
+        $response = Http::timeout(120)->withHeaders([
             'Authorization' => 'Bearer ' . $token,
             'x-proxy-source' => '',
             'Content-Type' => 'application/json',
@@ -77,12 +87,11 @@ class PromptService
 
         $data = $response->json();
 
-
+        Log::info("data['message']", ['message' => $data['message'] ?? 'not set']);
 
         if (isset($data['message'])) {
-            return $data['message'];
+            return $this->stripMarkdownCodeBlocks($data['message']);
         }
-
         // Если это стриминг или другая структура, возможно потребуется адаптация.
         // Пока возвращаем JSON строку если не нашли message, чтобы увидеть что пришло.
         return $data['message'] ?? $data['answer'] ?? json_encode($data, JSON_UNESCAPED_UNICODE);

@@ -12,9 +12,9 @@ Route::controller(ApiController::class)
     ->middleware('validate.key')
     ->group(function () {
         Route::post('/voice',               'voice');
-        Route::get('/voice/{voice_id}',     'getVoice');
         Route::post('/survey',              'survey');
-        Route::get('/statistics',           'statistics');
-        Route::get('/find-survey/{telegram_id}', 'findSurvey');
-        Route::get('/find-voice/{telegram_id}',  'findVoice');
+        Route::post('/voice/{voice_id}',     'checkVoiceStatus');
+        Route::post('/statistics',           'statistics');
+        Route::post('/check-survey/{telegram_id}', 'checkSurvey');
+        Route::post('/check-voice/{telegram_id}',  'checkVoice');
     });

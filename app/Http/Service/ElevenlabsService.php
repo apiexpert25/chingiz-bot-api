@@ -45,7 +45,6 @@ class ElevenlabsService
         ];
     }
 
-
     public function textToSpeech($text): ?string
     {
         Log::info('ElevenLabs TTS запрос', [
