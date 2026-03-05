@@ -52,4 +52,10 @@ return [
         'token' => env('TIMEWEB_AI_TOKEN'),
         'agent_id' => env('TIMEWEB_AGENT_ID'),
     ],
+
+    'pocketbase' => [
+        'url' => env('POCKETBASE_URL', 'http://127.0.0.1:8090'),
+        'email' => env('POCKETBASE_EMAIL'),
+        'password' => env('POCKETBASE_PASSWORD'),
+    ],
 ];
