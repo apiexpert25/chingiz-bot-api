@@ -4,6 +4,7 @@ namespace App\Http\Service;
 
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
+use App\Entities\PromptEntity;
 
 class PromptService
 {
@@ -40,6 +41,15 @@ class PromptService
         $textToSpeech = $this->askAI($prompt);
         Log::info($textToSpeech);
         return $textToSpeech;
+    }
+
+    /**
+     * Получает актуальный промпт из базы данных.
+     */
+    public function getLatestPrompt(): string
+    {
+        $promptEntity = PromptEntity::get();
+        return $promptEntity->getContent();
     }
 
     /**

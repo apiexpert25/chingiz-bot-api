@@ -4,7 +4,6 @@ namespace App\Http\Webhooks;
 
 use DefStudio\Telegraph\Handlers\WebhookHandler;
 use Illuminate\Support\Stringable;
-use App\Http\Service\PocketbaseService;
 use App\Http\Service\PromptService;
 use App\Http\Service\ElevenlabsService;
 use Illuminate\Support\Facades\Log;
@@ -21,23 +20,20 @@ class MainWebhookHandler extends WebhookHandler
         $this->chat->message('Обрабатываю запрос... Ожидайте голосового сообщения.')->send();
 
         try {
-            /** @var PocketbaseService $pocketbaseService */
-            $pocketbaseService = app(PocketbaseService::class);
-
             /** @var PromptService $promptService */
             $promptService = app(PromptService::class);
 
-            /** @var ElevenlabsService $elevenlabsService */
-            $elevenlabsService = app(ElevenlabsService::class);
-
-            $prompt = $pocketbaseService->getLatestPrompt();
+            $prompt = $promptService->getLatestPrompt();
 
             if (!$prompt) {
-                $this->chat->message('Не удалось получить промпт из Pocketbase. Возможно, таблица chingiz_prompts пуста или недоступна.')->send();
+                $this->chat->message('Промпт не найден в базе данных.')->send();
                 return;
             }
 
             $llmResponse = $promptService->askAI($prompt);
+
+            /** @var ElevenlabsService $elevenlabsService */
+            $elevenlabsService = app(ElevenlabsService::class);
 
             if (!$llmResponse) {
                 $this->chat->message('Не удалось получить ответ от LLM.')->send();
