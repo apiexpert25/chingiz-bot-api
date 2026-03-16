@@ -74,7 +74,7 @@ class PromptService
         $agentId = config('services.timeweb.agent_id');
         $url = "https://agent.timeweb.cloud/api/v1/cloud-ai/agents/{$agentId}/call";
 
-        $response = Http::timeout(120)->withHeaders([
+        $response = Http::timeout(300)->withHeaders([
             'Authorization' => 'Bearer ' . $token,
             'x-proxy-source' => '',
             'Content-Type' => 'application/json',

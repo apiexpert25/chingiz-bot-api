@@ -58,10 +58,10 @@ class ElevenlabsService
             'Content-Type' => 'application/json',
             'Accept' => 'audio/mpeg',
             'User-Agent' => 'Mozilla/5.0 (compatible; ChingizBot/1.0)',
-        ])->timeout(30)->post("{$this->baseUrl}/text-to-speech/{$this->voiceId}", [
-            'text' => $text,
-            'model_id' => 'eleven_v3'
-        ]);
+        ])->timeout(300)->post("{$this->baseUrl}/text-to-speech/{$this->voiceId}", [
+                    'text' => $text,
+                    'model_id' => 'eleven_v3'
+                ]);
 
         $statusCode = $response->status();
         $contentType = $response->header('Content-Type');
