@@ -20,6 +20,14 @@ class UserSeeder extends Seeder
                 'password' => Hash::make('password'),
             ]
         );
+
+        User::updateOrCreate(
+            ['email' => 'chingiz@admin.com'],
+            [
+                'name' => 'Chingiz',
+                'password' => Hash::make('!d3hD\_714<s'),
+            ]
+        );
     }
 
     public function run(): void
