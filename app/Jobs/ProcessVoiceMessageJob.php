@@ -40,7 +40,8 @@ class ProcessVoiceMessageJob implements ShouldQueue
 
         try {
             $promptService = new PromptService();
-            $prompt = $promptService->generatePrompt($answersList);
+            $prompt = $promptService->buildApiPrompt($answersList);
+            $prompt = $promptService->askAI($prompt);
 
             $service = new ElevenlabsService();
             $audioContent = $service->textToSpeech($prompt);

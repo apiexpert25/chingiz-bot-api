@@ -31,6 +31,14 @@ class PromptService
         return implode("\n", $lines);
     }
 
+    public function buildApiPrompt(string $answersList): string
+    {
+        $basePrompt = trim($this->getLatestPrompt());
+        $formattedAnswers = trim($this->formatAnswers($answersList));
+
+        return trim($basePrompt . "\n\n" . $formattedAnswers);
+    }
+
     public function generatePrompt(string $answersList): string
     {
 
