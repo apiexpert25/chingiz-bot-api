@@ -16,9 +16,7 @@ class ProcessStartCommandJob implements ShouldQueue
 
     public int $timeout = 300; // 5 minutes
 
-    public function __construct(
-        protected TelegraphChat $chat
-    ) {
+    public function __construct(protected TelegraphChat $chat) {
     }
 
     public function handle(): void
