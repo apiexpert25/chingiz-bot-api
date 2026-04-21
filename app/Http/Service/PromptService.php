@@ -34,8 +34,9 @@ class PromptService
     public function buildApiPrompt(string $answersList): string
     {
         $basePrompt = trim($this->getLatestPrompt());
+        Log::info($basePrompt);
         $formattedAnswers = trim($this->formatAnswers($answersList));
-
+        Log::info($formattedAnswers);
         return trim($basePrompt . "\n\n" . $formattedAnswers);
     }
 
