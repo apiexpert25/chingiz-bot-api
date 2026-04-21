@@ -52,7 +52,7 @@ class ProcessVoiceMessageJob implements ShouldQueue
             $fileName = "voices/voice_{$this->voice->getTelegramId()}_" . time() . ".mp3";
             Storage::disk('public')->put($fileName, $audioContent);
 
-            $fileUrl = url(Storage::url($fileName));
+            $fileUrl = Storage::disk('public')->url($fileName);
 
             $this->voice->setCompletedState($fileUrl);
 
