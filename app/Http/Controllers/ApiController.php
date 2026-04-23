@@ -25,11 +25,7 @@ class ApiController extends Controller
         $data = $request->validated();
         $telegramId = $data['telegram_id'];
 
-        $canCreateMultipleVoicesDaily = array(
-            325894830,
-            8032714453,
-            514150816, //delete later
-        );
+        $canCreateMultipleVoicesDaily = config('app.admin_list');
 
         $existingVoiceToday = VoiceMessagesEntity::findSentVoiceToday($telegramId);
 
@@ -40,7 +36,6 @@ class ApiController extends Controller
                 'reason' => 'Голосовое уже было отправлено сегодня'
             ], 400);
         }
-
 
         $answers = SurveyEntity::findAnswersByTelegramId($telegramId);
 
@@ -107,9 +102,10 @@ class ApiController extends Controller
     }
     public function checkVoice(int $telegramId)
     {
+        $canCreateMultipleVoicesDaily = config('app.admin_list');
         $existingVoiceToday = VoiceMessagesEntity::findSentVoiceToday($telegramId);
 
-        if ($existingVoiceToday === null) {
+        if ($existingVoiceToday === null || in_array($telegramId, $canCreateMultipleVoicesDaily)) {
             return response()->json([
                 'telegram_id' => $telegramId,
                 'voice_was_sent' => false
