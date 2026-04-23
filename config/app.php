@@ -98,7 +98,7 @@ return [
     'cipher' => 'AES-256-CBC',
 
     'key' => env('APP_KEY'),
-    'admin_list' => env('ADMIN_TELEGRAM_ID_LIST'),
+    'admin_list' =>  array_map('trim', explode(',', env('ADMIN_TELEGRAM_ID_LIST', ''))),
 
     'previous_keys' => [
         ...array_filter(
