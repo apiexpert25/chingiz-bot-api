@@ -89,7 +89,6 @@ class PromptService
             'Content-Type' => 'application/json',
         ])->post($url, [
                     'message' => $prompt,
-                    'parent_message_id' => '',
                     'file_ids' => []
                 ]);
 
