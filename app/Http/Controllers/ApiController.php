@@ -25,9 +25,15 @@ class ApiController extends Controller
         $data = $request->validated();
         $telegramId = $data['telegram_id'];
 
+        $canCreateMultipleVoicesDaily = array(
+            325894830,
+            8032714453,
+            514150816, //delete later
+        );
+
         $existingVoiceToday = VoiceMessagesEntity::findSentVoiceToday($telegramId);
 
-        if ($existingVoiceToday !== null) {
+        if ($existingVoiceToday !== null && !in_array($telegramId, $canCreateMultipleVoicesDaily)) {
             return response()->json([
                 'telegram_id' => $telegramId,
                 'result' => 'error',
